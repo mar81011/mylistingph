@@ -6,21 +6,60 @@ import type { Listing } from "@/lib/listing-types";
 import {
   createListingInDb,
   deleteListingFromDb,
-  getActiveListingsFromDb,
   getAllListingsFromDb,
   getListingByIdFromDb,
   getListingBySlugFromDb,
   incrementListingViews,
+  searchActiveListingsFromDb,
   updateListingInDb,
   updateListingStatusInDb,
   type ListingInput,
 } from "@/lib/data/listings";
+import {
+  sampleMatchesFilters,
+  type ListingFilters,
+  type PaginatedListings,
+} from "@/lib/listing-filters";
+import { SAMPLE_LISTING } from "@/lib/sample-listing";
+
+export async function fetchActiveListingsPaginated(
+  filters: ListingFilters
+): Promise<PaginatedListings> {
+  try {
+    const includeSample = sampleMatchesFilters(SAMPLE_LISTING, filters);
+    const result = await searchActiveListingsFromDb(filters, {
+      includeSampleSlot: includeSample,
+    });
+
+    const listings =
+      includeSample && (filters.page ?? 1) === 1
+        ? [SAMPLE_LISTING, ...result.listings]
+        : result.listings;
+
+    return { ...result, listings };
+  } catch {
+    const includeSample = sampleMatchesFilters(SAMPLE_LISTING, filters);
+    const listings =
+      includeSample && (filters.page ?? 1) === 1 ? [SAMPLE_LISTING] : [];
+    return {
+      listings,
+      total: listings.length,
+      page: filters.page ?? 1,
+      pageSize: 12,
+      totalPages: 1,
+    };
+  }
+}
 
 export async function fetchActiveListings(): Promise<Listing[]> {
   try {
-    return await getActiveListingsFromDb();
+    const result = await searchActiveListingsFromDb(
+      { page: 1 },
+      { includeSampleSlot: true }
+    );
+    return [SAMPLE_LISTING, ...result.listings];
   } catch {
-    return [];
+    return [SAMPLE_LISTING];
   }
 }
 

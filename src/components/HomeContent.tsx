@@ -1,18 +1,27 @@
 "use client";
 
+import { Suspense } from "react";
 import { ListingCard } from "@/components/ListingCard";
 import { ContactStrip } from "@/components/ContactStrip";
+import { ListingsPagination } from "@/components/ListingsPagination";
+import { SearchFilters } from "@/components/SearchFilters";
 import type { Client, Listing } from "@/lib/listing-types";
-import { SAMPLE_LISTING } from "@/lib/sample-listing";
 
 type HomeContentProps = {
   listings: Listing[];
   defaultClient: Client | null;
+  page: number;
+  totalPages: number;
+  total: number;
 };
 
-export function HomeContent({ listings, defaultClient }: HomeContentProps) {
-  const allListings = [SAMPLE_LISTING, ...listings];
-
+export function HomeContent({
+  listings,
+  defaultClient,
+  page,
+  totalPages,
+  total,
+}: HomeContentProps) {
   return (
     <div>
       <section className="bg-gradient-to-b from-emerald-50 to-slate-50 py-12 md:py-16">
@@ -37,11 +46,35 @@ export function HomeContent({ listings, defaultClient }: HomeContentProps) {
         <p className="mb-6 text-sm text-slate-500">
           Tap a listing for photos, details, and contact info.
         </p>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {allListings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))}
-        </div>
+
+        <Suspense fallback={<div className="mb-8 h-14 animate-pulse rounded-xl bg-slate-100" />}>
+          <div className="mb-8">
+            <SearchFilters />
+          </div>
+        </Suspense>
+
+        {listings.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
+            <p className="text-slate-600">No listings match your search.</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Try different filters or clear your search.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {listings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        )}
+
+        <Suspense>
+          <ListingsPagination
+            page={page}
+            totalPages={totalPages}
+            total={total}
+          />
+        </Suspense>
       </section>
     </div>
   );

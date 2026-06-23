@@ -40,7 +40,7 @@ npm run dev
 
 ## Deploy to Vercel
 
-1. Push this repo to [github.com/mar81011](https://github.com/mar81011)
+1. Push this repo to [github.com/mar81011/mylistingph](https://github.com/mar81011/mylistingph)
 2. Import project in [vercel.com](https://vercel.com)
 3. Add all env vars from `.env`
 4. Set `NEXT_PUBLIC_SITE_URL` to your Vercel URL (e.g. `https://listingph.vercel.app`)
@@ -56,10 +56,7 @@ npm run db:seed
 
 ```bash
 # Create repo (after gh auth login), or create empty repo at github.com/new
-gh repo create mar81011/realestate --public --source=. --remote=origin --push
-
-# Or manually:
-git remote add origin https://github.com/mar81011/realestate.git
+git remote add origin https://github.com/mar81011/mylistingph.git
 git push -u origin master
 ```
 

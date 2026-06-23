@@ -12,16 +12,24 @@ import {
   updateClientInDb,
 } from "@/lib/data/clients";
 
-export async function fetchClients(): Promise<Client[]> {
+export async function fetchClients(): Promise<{
+  clients: Client[];
+  error?: string;
+}> {
   try {
     const clients = await getClientsFromDb();
     if (clients.length === 0) {
       const defaultClient = await ensureDefaultClient();
-      return [defaultClient];
+      return { clients: [defaultClient] };
     }
-    return clients;
-  } catch {
-    return [];
+    return { clients };
+  } catch (e) {
+    const message =
+      e instanceof Error ? e.message : "Could not connect to the database.";
+    return {
+      clients: [],
+      error: `Could not load clients: ${message}`,
+    };
   }
 }
 
@@ -38,11 +46,17 @@ export async function addClientAction(data: {
   phone: string;
   messengerUrl: string;
   facebookUrl: string;
-}) {
-  const clients = await getClientsFromDb();
-  await createClientInDb({ ...data, isDefault: clients.length === 0 });
-  revalidatePath("/");
-  revalidatePath("/admin");
+}): Promise<{ error?: string }> {
+  try {
+    const clients = await getClientsFromDb();
+    await createClientInDb({ ...data, isDefault: clients.length === 0 });
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return {};
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Save failed";
+    return { error: `Could not save client: ${message}` };
+  }
 }
 
 export async function updateClientAction(

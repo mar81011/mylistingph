@@ -59,12 +59,17 @@ function UrlFields({
 export function ClientsManager() {
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
+  const [dbError, setDbError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function refresh() {
-    fetchClients().then(setClients);
+    fetchClients().then(({ clients: next, error }) => {
+      setClients(next);
+      setDbError(error ?? null);
+    });
   }
 
   useEffect(() => {
@@ -75,12 +80,17 @@ export function ClientsManager() {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
     startTransition(async () => {
-      await addClientAction({
+      setSaveError(null);
+      const result = await addClientAction({
         name: String(form.get("name")),
         phone: String(form.get("phone")),
         messengerUrl: String(form.get("messengerUrl") || ""),
         facebookUrl: String(form.get("facebookUrl") || ""),
       });
+      if (result.error) {
+        setSaveError(result.error);
+        return;
+      }
       setShowAdd(false);
       refresh();
       router.refresh();
@@ -105,6 +115,30 @@ export function ClientsManager() {
 
   return (
     <div className="space-y-6">
+      {dbError && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="font-medium">Database not set up yet</p>
+          <p className="mt-1">{dbError}</p>
+          <p className="mt-2">
+            <a
+              href="https://supabase.com/dashboard/project/bqtkuystuusvqenznqlu/sql/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-emerald-700 underline"
+            >
+              Open Supabase SQL Editor
+            </a>
+            {" — copy all of "}
+            <code className="rounded bg-amber-100 px-1">prisma/init.sql</code>
+            {" from the project, paste, and click Run."}
+          </p>
+        </div>
+      )}
+      {saveError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          {saveError}
+        </div>
+      )}
       <Card className="border-emerald-200 bg-emerald-50/50">
         <CardContent className="pt-6 text-sm text-slate-700">
           <p className="font-medium text-emerald-900">Messenger &amp; Facebook links</p>

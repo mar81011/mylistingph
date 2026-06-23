@@ -1,7 +1,47 @@
-import type { Client as PrismaClient, Listing as PrismaListing } from "@prisma/client";
 import type { Client, Listing } from "@/lib/listing-types";
 
-export function mapClient(row: PrismaClient): Client {
+export type ClientRow = {
+  id: string;
+  name: string;
+  phone: string;
+  messengerUrl: string;
+  facebookUrl: string;
+  isDefault: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type ListingRow = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  listingType: Listing["listingType"];
+  propertyType: Listing["propertyType"];
+  pricePhp: number;
+  priceLabel: string | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  floorAreaSqm: number | null;
+  lotAreaSqm: number | null;
+  region: string | null;
+  province: string | null;
+  city: string;
+  barangay: string | null;
+  addressNotes: string | null;
+  photos: string[];
+  contactName: string;
+  contactPhone: string;
+  messengerUrl: string | null;
+  facebookUrl: string | null;
+  status: Listing["status"];
+  viewCount: number;
+  clientId: string;
+  createdAt: string;
+  updatedAt?: string;
+};
+
+export function mapClient(row: ClientRow): Client {
   return {
     id: row.id,
     name: row.name,
@@ -12,7 +52,7 @@ export function mapClient(row: PrismaClient): Client {
   };
 }
 
-export function mapListing(row: PrismaListing): Listing {
+export function mapListing(row: ListingRow): Listing {
   return {
     id: row.id,
     slug: row.slug,
@@ -29,13 +69,13 @@ export function mapListing(row: PrismaListing): Listing {
     city: row.city,
     barangay: row.barangay ?? undefined,
     addressNotes: row.addressNotes ?? undefined,
-    photos: row.photos,
+    photos: row.photos ?? [],
     clientId: row.clientId,
     contactName: row.contactName,
     contactPhone: row.contactPhone,
     messengerUrl: row.messengerUrl ?? undefined,
     facebookUrl: row.facebookUrl ?? undefined,
     status: row.status,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: row.createdAt,
   };
 }

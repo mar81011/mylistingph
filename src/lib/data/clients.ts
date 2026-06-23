@@ -1,72 +1,143 @@
-import { prisma } from "@/lib/db";
-import { mapClient } from "@/lib/mappers";
+import { createServiceClient } from "@/lib/supabase/admin";
+import { mapClient, type ClientRow } from "@/lib/mappers";
 import type { Client } from "@/lib/listing-types";
+import { generateId } from "@/lib/utils";
+
+function db() {
+  return createServiceClient();
+}
+
+function now() {
+  return new Date().toISOString();
+}
 
 export async function getClientsFromDb(): Promise<Client[]> {
-  const rows = await prisma.client.findMany({ orderBy: { createdAt: "asc" } });
-  return rows.map(mapClient);
+  const { data, error } = await db()
+    .from("Client")
+    .select("*")
+    .order("createdAt", { ascending: true });
+
+  if (error) throw error;
+  return (data as ClientRow[]).map(mapClient);
 }
 
 export async function getDefaultClientFromDb(): Promise<Client | null> {
-  const row =
-    (await prisma.client.findFirst({ where: { isDefault: true } })) ??
-    (await prisma.client.findFirst({ orderBy: { createdAt: "asc" } }));
-  return row ? mapClient(row) : null;
+  const { data: defaultRows, error: defaultError } = await db()
+    .from("Client")
+    .select("*")
+    .eq("isDefault", true)
+    .limit(1);
+
+  if (defaultError) throw defaultError;
+  if (defaultRows?.[0]) return mapClient(defaultRows[0] as ClientRow);
+
+  const { data, error } = await db()
+    .from("Client")
+    .select("*")
+    .order("createdAt", { ascending: true })
+    .limit(1);
+
+  if (error) throw error;
+  return data?.[0] ? mapClient(data[0] as ClientRow) : null;
 }
 
 export async function getClientByIdFromDb(id: string): Promise<Client | null> {
-  const row = await prisma.client.findUnique({ where: { id } });
-  return row ? mapClient(row) : null;
+  const { data, error } = await db()
+    .from("Client")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data ? mapClient(data as ClientRow) : null;
 }
 
 export async function createClientInDb(
   data: Omit<Client, "id" | "isDefault"> & { isDefault?: boolean }
 ): Promise<Client> {
+  const supabase = db();
+
   if (data.isDefault) {
-    await prisma.client.updateMany({ data: { isDefault: false } });
+    await supabase.from("Client").update({ isDefault: false }).neq("id", "");
   }
-  const count = await prisma.client.count();
-  const row = await prisma.client.create({
-    data: {
-      name: data.name,
-      phone: data.phone,
-      messengerUrl: data.messengerUrl,
-      facebookUrl: data.facebookUrl,
-      isDefault: data.isDefault ?? count === 0,
-    },
-  });
-  return mapClient(row);
+
+  const { count } = await supabase
+    .from("Client")
+    .select("*", { count: "exact", head: true });
+
+  const timestamp = now();
+  const row = {
+    id: generateId(),
+    name: data.name,
+    phone: data.phone,
+    messengerUrl: data.messengerUrl,
+    facebookUrl: data.facebookUrl,
+    isDefault: data.isDefault ?? (count ?? 0) === 0,
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
+
+  const { data: created, error } = await supabase
+    .from("Client")
+    .insert(row)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return mapClient(created as ClientRow);
 }
 
 export async function updateClientInDb(
   id: string,
   data: Partial<Omit<Client, "id">>
 ): Promise<Client> {
+  const supabase = db();
+
   if (data.isDefault) {
-    await prisma.client.updateMany({ data: { isDefault: false } });
+    await supabase.from("Client").update({ isDefault: false }).neq("id", id);
   }
-  const row = await prisma.client.update({ where: { id }, data });
-  return mapClient(row);
+
+  const { data: updated, error } = await supabase
+    .from("Client")
+    .update({ ...data, updatedAt: now() })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return mapClient(updated as ClientRow);
 }
 
 export async function deleteClientFromDb(id: string): Promise<void> {
-  const count = await prisma.client.count();
-  if (count <= 1) {
+  const supabase = db();
+  const { count } = await supabase
+    .from("Client")
+    .select("*", { count: "exact", head: true });
+
+  if ((count ?? 0) <= 1) {
     throw new Error("Cannot delete the only client.");
   }
-  await prisma.client.delete({ where: { id } });
-  const remaining = await prisma.client.findMany();
-  if (remaining.length && !remaining.some((c) => c.isDefault)) {
-    await prisma.client.update({
-      where: { id: remaining[0].id },
-      data: { isDefault: true },
-    });
+
+  const { error } = await supabase.from("Client").delete().eq("id", id);
+  if (error) throw error;
+
+  const { data: remaining } = await supabase.from("Client").select("*");
+  if (remaining?.length && !remaining.some((c) => c.isDefault)) {
+    await supabase
+      .from("Client")
+      .update({ isDefault: true, updatedAt: now() })
+      .eq("id", remaining[0].id);
   }
 }
 
 export async function setDefaultClientInDb(id: string): Promise<void> {
-  await prisma.client.updateMany({ data: { isDefault: false } });
-  await prisma.client.update({ where: { id }, data: { isDefault: true } });
+  const supabase = db();
+  await supabase.from("Client").update({ isDefault: false }).neq("id", "");
+  const { error } = await supabase
+    .from("Client")
+    .update({ isDefault: true, updatedAt: now() })
+    .eq("id", id);
+  if (error) throw error;
 }
 
 export async function ensureDefaultClient(): Promise<Client> {

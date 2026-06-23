@@ -33,7 +33,7 @@ export function ListingForm({ listing, onSaved, onCancel }: ListingFormProps) {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    fetchClients().then((c) => {
+    fetchClients().then(({ clients: c }) => {
       setClients(c);
       if (!listing && c.length) setClientId(c.find((x) => x.isDefault)?.id ?? c[0].id);
       if (listing) setClientId(listing.clientId);

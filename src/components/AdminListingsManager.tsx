@@ -26,7 +26,7 @@ export function AdminListingsManager({ onEdit }: AdminListingsManagerProps) {
   const [isPending, startTransition] = useTransition();
 
   function refresh() {
-    Promise.all([fetchAllListings(), fetchClients()]).then(([l, c]) => {
+    Promise.all([fetchAllListings(), fetchClients()]).then(([l, { clients: c }]) => {
       setListings(l);
       setClients(c);
     });

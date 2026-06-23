@@ -28,6 +28,10 @@ export function generateSlug(title: string): string {
   return `${base}-${suffix}`;
 }
 
+export function generateId(): string {
+  return crypto.randomUUID().replace(/-/g, "").slice(0, 25);
+}
+
 export function getSiteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 }
