@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ListingPH
 
-## Getting Started
+Real estate listings for the Philippines — admin panel, Supabase database, Vercel hosting.
 
-First, run the development server:
+## Setup
+
+### 1. Supabase
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. **Database** → Settings → Connection string:
+   - `DATABASE_URL` = Transaction pooler (port **6543**, `?pgbouncer=true`)
+   - `DIRECT_URL` = Direct connection (port **5432**)
+3. **API** → copy `URL` and `anon` key, and `service_role` key
+4. **Storage** → create public bucket `listing-photos`
+
+### 2. Environment
+
+```bash
+cp .env.example .env
+```
+
+Fill in all values in `.env`.
+
+### 3. Database
+
+```bash
+npm install
+npx prisma db push
+npm run db:seed
+```
+
+### 4. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Site: http://localhost:3000
+- Admin: http://localhost:3000/admin (PIN from `ADMIN_PIN`, default `1234`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push this repo to [github.com/mar81011](https://github.com/mar81011)
+2. Import project in [vercel.com](https://vercel.com)
+3. Add all env vars from `.env`
+4. Set `NEXT_PUBLIC_SITE_URL` to your Vercel URL (e.g. `https://listingph.vercel.app`)
+5. Deploy — Vercel runs `prisma generate` on build
+6. After first deploy, run locally against production DB:
 
-## Learn More
+```bash
+npx prisma db push
+npm run db:seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+## GitHub
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+git remote add origin https://github.com/mar81011/listingph.git
+git push -u origin main
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Create the empty repo `listingph` on GitHub first if it does not exist.

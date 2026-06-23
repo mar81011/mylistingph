@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Client {
+  id           String    @id @default(cuid())
+  name         String
+  phone        String
+  messengerUrl String    @default("")
+  facebookUrl  String    @default("")
+  isDefault    Boolean   @default(false)
+  listings     Listing[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum ListingType {
+  sale
+  rent
+}
+
+enum PropertyType {
+  house_and_lot
+  condo
+  townhouse
+  apartment
+  vacant_lot
+  commercial
+}
+
+enum ListingStatus {
+  active
+  sold
+  rented
+}
+
+model Listing {
+  id           String         @id @default(cuid())
+  slug         String         @unique
+  title        String
+  description  String
+  listingType  ListingType
+  propertyType PropertyType
+  pricePhp     Int
+  priceLabel   String?
+  bedrooms     Int?
+  bathrooms    Int?
+  floorAreaSqm Float?
+  lotAreaSqm   Float?
+  region       String?
+  province     String?
+  city         String
+  barangay     String?
+  addressNotes String?
+  photos       String[]
+  contactName  String
+  contactPhone String
+  messengerUrl String?
+  facebookUrl  String?
+  status       ListingStatus  @default(active)
+  viewCount    Int            @default(0)
+  clientId     String
+  client       Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([city])
+  @@index([propertyType])
+  @@index([listingType])
+  @@index([pricePhp])
+  @@index([status])
+  @@index([createdAt])
+}
