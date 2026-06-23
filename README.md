@@ -55,8 +55,16 @@ npm run db:seed
 ## GitHub
 
 ```bash
-git remote add origin https://github.com/mar81011/listingph.git
-git push -u origin main
+# Create repo (after gh auth login), or create empty repo at github.com/new
+gh repo create mar81011/realestate --public --source=. --remote=origin --push
+
+# Or manually:
+git remote add origin https://github.com/mar81011/realestate.git
+git push -u origin master
 ```
 
-Create the empty repo `listingph` on GitHub first if it does not exist.
+## Live site
+
+Production: **https://realestate-seven-neon.vercel.app**
+
+Admin: **https://realestate-seven-neon.vercel.app/admin**
