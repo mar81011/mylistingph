@@ -117,21 +117,46 @@ export function ClientsManager() {
     <div className="space-y-6">
       {dbError && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <p className="font-medium">Database not set up yet</p>
-          <p className="mt-1">{dbError}</p>
-          <p className="mt-2">
-            <a
-              href="https://supabase.com/dashboard/project/bqtkuystuusvqenznqlu/sql/new"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-emerald-700 underline"
-            >
-              Open Supabase SQL Editor
-            </a>
-            {" — copy all of "}
-            <code className="rounded bg-amber-100 px-1">prisma/init.sql</code>
-            {" from the project, paste, and click Run."}
+          <p className="font-medium">
+            {dbError.includes("SUPABASE_SERVICE_ROLE_KEY")
+              ? "Supabase service role key missing"
+              : "Could not connect to the database"}
           </p>
+          <p className="mt-1">{dbError}</p>
+          {dbError.includes("SUPABASE_SERVICE_ROLE_KEY") ||
+          dbError.includes("supabaseKey is required") ? (
+            <p className="mt-2">
+              <a
+                href="https://supabase.com/dashboard/project/bqtkuystuusvqenznqlu/settings/api"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-emerald-700 underline"
+              >
+                Open Supabase → Settings → API
+              </a>
+              {" — reveal "}
+              <code className="rounded bg-amber-100 px-1">service_role</code>
+              {", add as "}
+              <code className="rounded bg-amber-100 px-1">
+                SUPABASE_SERVICE_ROLE_KEY
+              </code>
+              {" in Vercel env vars, then redeploy."}
+            </p>
+          ) : (
+            <p className="mt-2">
+              <a
+                href="https://supabase.com/dashboard/project/bqtkuystuusvqenznqlu/sql/new"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-emerald-700 underline"
+              >
+                Open Supabase SQL Editor
+              </a>
+              {" — copy all of "}
+              <code className="rounded bg-amber-100 px-1">prisma/init.sql</code>
+              {" from the project, paste, and click Run."}
+            </p>
+          )}
         </div>
       )}
       {saveError && (

@@ -33,5 +33,16 @@ export function generateId(): string {
 }
 
 export function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!raw) return "http://localhost:3000";
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+}
+
+/** Safe for layout metadataBase — never throws on bad env values. */
+export function getMetadataBase(): URL {
+  try {
+    return new URL(getSiteUrl());
+  } catch {
+    return new URL("http://localhost:3000");
+  }
 }

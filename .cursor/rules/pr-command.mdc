@@ -1,0 +1,35 @@
+---
+description: When user says /pr, commit, push, and open a GitHub pull request
+alwaysApply: true
+---
+
+# /pr — ship changes to GitHub
+
+When the user sends **`/pr`** (alone or with a short note), run the full ship workflow **without asking for confirmation** unless something is blocked.
+
+## Workflow
+
+1. In parallel: `git status`, `git diff`, `git log -3`, check branch tracks remote (`git branch -vv`).
+2. **Do not stage or commit**: `.env`, credentials, API keys, or other secrets. Warn if the user expected them included.
+3. Stage all other relevant changes (`git add` for modified + untracked project files).
+4. Draft a concise commit message from the diff (1–2 sentences, focus on why).
+5. Commit (HEREDOC message). If the hook fails, fix and make a **new** commit — never amend a failed hook.
+6. `git push -u origin HEAD` (only if not already pushed or branch is ahead).
+7. Create PR with `gh pr create` per project PR template (summary + test plan). Base branch: `master` unless user says otherwise.
+8. Return the **PR URL**.
+
+## Skip / ask only when
+
+- Working tree is clean → say nothing to commit; offer to open PR for existing commits only.
+- On `master` with unpushed commits → push and say no PR needed, or ask if they want a PR from a feature branch.
+- `gh` not authenticated or push rejected → report error and stop.
+
+## User overrides
+
+- `/pr wip` → still commit and push; PR title prefix `[WIP]`.
+- `/pr no commit` → push existing commits and open PR only.
+
+## vs /push
+
+Use **`/pr`** when you want a pull request (feature branch, review before merge).
+Use **`/push`** for direct commit + push with no PR — typical for solo work on `master`.

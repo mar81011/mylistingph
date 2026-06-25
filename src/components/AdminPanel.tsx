@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogOut, Shield, Users, Plus, LayoutList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminLoginForm } from "@/components/AdminLoginForm";
@@ -18,6 +19,7 @@ import type { Listing } from "@/lib/listing-types";
 type AdminTab = "clients" | "create" | "listings";
 
 export function AdminPanel() {
+  const router = useRouter();
   const [authenticated, setAuthenticated] = useState(false);
   const [ready, setReady] = useState(false);
   const [tab, setTab] = useState<AdminTab>("clients");
@@ -42,7 +44,7 @@ export function AdminPanel() {
   function handleSaved(slug: string) {
     setEditingListing(null);
     setTab("listings");
-    window.open(`/listings/${slug}`, "_blank");
+    router.push(`/listings/${slug}`);
   }
 
   if (!ready) {
