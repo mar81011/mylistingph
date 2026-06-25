@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Upload, X, Loader2 } from "lucide-react";
+import { uploadListingPhoto } from "@/lib/actions/upload";
 
 type PhotoUploadProps = {
   photos: string[];
@@ -43,10 +44,20 @@ export function PhotoUpload({ photos, onChange }: PhotoUploadProps) {
         break;
       }
       try {
-        const dataUrl = await fileToDataUrl(file);
-        newUrls.push(dataUrl);
+        const formData = new FormData();
+        formData.append("file", file);
+        const result = await uploadListingPhoto(formData);
+
+        if (result.url) {
+          newUrls.push(result.url);
+        } else if (result.error?.includes("not configured")) {
+          newUrls.push(await fileToDataUrl(file));
+        } else {
+          setError(result.error ?? "Upload failed.");
+          break;
+        }
       } catch {
-        setError("Failed to read image.");
+        setError("Failed to upload image.");
         break;
       }
     }

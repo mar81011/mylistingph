@@ -20,8 +20,8 @@ export const SAMPLE_LISTING: Listing = {
   barangay: "Fairview",
   addressNotes: "Near SM Fairview",
   photos: [
+    "https://images.unsplash.com/photo-1600585152915-d208bec867a1?w=1200&h=800&fit=crop",
     "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&h=800&fit=crop",
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=800&fit=crop",
   ],
   clientId: "sample-client",
   contactName: "Maria Santos",

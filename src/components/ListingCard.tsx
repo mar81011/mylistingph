@@ -1,8 +1,8 @@
 import type { Listing } from "@/lib/listing-types";
 import Link from "next/link";
-import Image from "next/image";
 import { Bed, Bath, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { ListingPhoto } from "@/components/ListingPhoto";
 import {
   formatListingType,
   formatPrice,
@@ -24,12 +24,11 @@ export function ListingCard({ listing }: ListingCardProps) {
     >
       <div className="relative aspect-[4/3] bg-slate-100">
         {photo ? (
-          <Image
+          <ListingPhoto
             src={photo}
             alt={listing.title}
             fill
-            className="object-cover transition group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 33vw"
+            className="transition group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center text-slate-400">

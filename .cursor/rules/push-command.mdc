@@ -1,0 +1,33 @@
+---
+description: When user says /push, commit and push to origin (no PR)
+alwaysApply: true
+---
+
+# /push — commit and push to GitHub
+
+When the user sends **`/push`** (alone or with a short note), commit and push **without** opening a pull request.
+
+## Workflow
+
+1. In parallel: `git status`, `git diff`, `git log -3`, `git branch -vv`.
+2. **Do not stage or commit**: `.env`, credentials, API keys, or other secrets. Warn if the user expected them included.
+3. Stage all other relevant changes.
+4. Draft a concise commit message from the diff (1–2 sentences, focus on why).
+5. Commit (HEREDOC message). If the hook fails, fix and make a **new** commit — never amend a failed hook.
+6. `git push origin HEAD` (use `-u` if the branch has no upstream).
+7. Report: branch name, commit hash (short), and remote URL if useful.
+
+## Skip / ask only when
+
+- Working tree is clean → say nothing to commit; push only if branch is ahead of origin.
+- Push rejected (non-fast-forward) → report error; do not force-push unless user explicitly asks.
+
+## User overrides
+
+- `/push no commit` → push existing commits only, no new commit.
+- `/push wip` → commit message prefix `wip:`.
+
+## vs /pr
+
+Use **`/push`** for direct work on `master` (or any branch) with no PR.
+Use **`/pr`** only when a pull request is wanted (feature branch → review → merge).

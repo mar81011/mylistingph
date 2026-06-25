@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   Bed,
@@ -14,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ShareButtons } from "@/components/ShareButtons";
+import { ListingPhoto } from "@/components/ListingPhoto";
 import type { Listing } from "@/lib/listing-types";
 import {
   formatListingType,
@@ -68,23 +68,12 @@ export function ListingDetailView({ listing }: ListingDetailViewProps) {
           {listing.photos.length > 0 ? (
             <div className="space-y-3">
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-slate-100">
-                {listing.photos[0].startsWith("data:") ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={listing.photos[0]}
-                    alt={listing.title}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={listing.photos[0]}
-                    alt={listing.title}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                )}
+                <ListingPhoto
+                  src={listing.photos[0]}
+                  alt={listing.title}
+                  fill
+                  priority
+                />
               </div>
               {listing.photos.length > 1 && (
                 <div className="grid grid-cols-4 gap-2">
@@ -93,22 +82,11 @@ export function ListingDetailView({ listing }: ListingDetailViewProps) {
                       key={photo}
                       className="relative aspect-square overflow-hidden rounded-lg"
                     >
-                      {photo.startsWith("data:") ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={photo}
-                          alt={`${listing.title} photo ${i + 2}`}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <Image
-                          src={photo}
-                          alt={`${listing.title} photo ${i + 2}`}
-                          fill
-                          className="object-cover"
-                          sizes="100px"
-                        />
-                      )}
+                      <ListingPhoto
+                        src={photo}
+                        alt={`${listing.title} photo ${i + 2}`}
+                        fill
+                      />
                     </div>
                   ))}
                 </div>

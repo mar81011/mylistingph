@@ -76,14 +76,32 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
+CREATE INDEX IF NOT EXISTS "Listing_clientId_idx" ON "Listing"("clientId");
+
+ALTER TABLE "Listing" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "Client" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "public_read_active_listings" ON "Listing";
+CREATE POLICY "public_read_active_listings" ON "Listing"
+  FOR SELECT
+  USING (status = 'active'::"ListingStatus");
+
+DROP POLICY IF EXISTS "deny_public_client_access" ON "Client";
+CREATE POLICY "deny_public_client_access" ON "Client"
+  AS RESTRICTIVE
+  FOR ALL
+  TO anon, authenticated
+  USING (false)
+  WITH CHECK (false);
+
 -- Optional starter client (safe to skip if you add your own in admin)
 INSERT INTO "Client" ("id", "name", "phone", "messengerUrl", "facebookUrl", "isDefault", "createdAt", "updatedAt")
 VALUES (
   'clseed0001',
   'Maria Santos',
   '09171234567',
-  '',
-  '',
+  'https://m.me/example',
+  'https://facebook.com/example',
   true,
   NOW(),
   NOW()
